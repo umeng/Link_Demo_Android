@@ -141,5 +141,9 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.installparams) {
             MobclickLink.getInstallParams(this, umlinkAdapter);
         }
+        else if (id == R.id.other) {
+            in = new Intent(mContext, UMOtherActivity.class);
+            startActivity(in);
+        }
     }
 }
