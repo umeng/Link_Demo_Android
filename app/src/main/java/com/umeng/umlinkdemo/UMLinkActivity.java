@@ -15,10 +15,12 @@ public class UMLinkActivity extends Activity {
         setContentView(R.layout.activity_umlink);
         String result;
         Intent intent = getIntent();
-        String path = intent.getStringExtra("path");
 
+        //显示query中的path信息
+        String path = intent.getStringExtra("path");
         result = "path:\n" + path + "\n";
 
+        //显示query中的kv信息
         result += "\nparams:\n";
         Bundle params_bundle = intent.getBundleExtra("params");
         if (params_bundle !=null && !params_bundle.isEmpty()) {
@@ -28,13 +30,20 @@ public class UMLinkActivity extends Activity {
                 }
             }
         }
+        else {
+            result += "\n";
+        }
 
+        //显示安装参数中的kv信息
         result += "\ninstall_params:\n";
         Bundle install_params_bundle = intent.getBundleExtra("install_params");
         if (install_params_bundle != null && !install_params_bundle.isEmpty()) {
             for (String key : install_params_bundle.keySet()) {
                 result += key + "=" + install_params_bundle.getString(key) + "\n";
             }
+        }
+        else {
+            result += "\n";
         }
 
         mTextView = (TextView) findViewById(R.id.valueText);

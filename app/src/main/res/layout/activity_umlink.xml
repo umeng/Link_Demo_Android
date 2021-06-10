@@ -9,7 +9,7 @@
         android:id="@+id/siman_button"
         android:layout_width="300dp"
         android:layout_height="50dp"
-        android:text="TEST"
+        android:text="LINK"
         android:layout_marginLeft="10dp"/>
 
     <TextView
