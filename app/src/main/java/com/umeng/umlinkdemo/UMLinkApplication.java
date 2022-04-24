@@ -30,13 +30,9 @@ public class UMLinkApplication extends Application {
          * 请将appkey参数替换为您的appkey，确保填入正确的appkey
          */
         UMConfigure.setLogEnabled(true);
-        UMConfigure.init(this, "5f3a3aa3b4b08b653e95e6f9", "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
-        UMConfigure.setProcessEvent(true);//支持多进程打点.默认不支持
 
-        /**
-         * getInstallParams请在UMConfigure.init之后调用
-         * 由于UMConfigure.init有异步联网操作,建议init后延迟几秒后再调用getInstallParams
-         * 或者，如示例在真正需要参数的某个时间点或者用户操作节点（如button点击）调用
-         */
+        //预初始化友盟SDK
+        UMConfigure.preInit(this, "5f3a3aa3b4b08b653e95e6f9", "Umeng");
+
     }
 }

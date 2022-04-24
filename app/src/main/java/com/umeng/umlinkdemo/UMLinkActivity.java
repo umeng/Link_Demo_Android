@@ -46,6 +46,10 @@ public class UMLinkActivity extends Activity {
             result += "\n";
         }
 
+        //显示来源（For调试）
+        String from = intent.getStringExtra("from");
+        result += "from:\n" + from + "\n";
+
         mTextView = (TextView) findViewById(R.id.valueText);
         mTextView.setText(result);
     }

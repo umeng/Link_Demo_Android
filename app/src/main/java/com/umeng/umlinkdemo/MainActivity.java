@@ -9,10 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
-//import com.umeng.analytics.MobclickAgent;
-//import com.umeng.analytics.UMLinkListener;
+import com.umeng.commonsdk.UMConfigure;
 import com.umeng.umlink.MobclickLink;
 import com.umeng.umlink.UMLinkListener;
 
@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     private Context mContext;
-
+    private String mFrom = "";
     private HashMap<String,String> mInstall_params;
 
     @Override
@@ -30,14 +30,56 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
+        SharedPreferences sp = mContext.getSharedPreferences("MY_PREFERENCE", Context.MODE_PRIVATE);
+        boolean hasAuth = sp.getBoolean("key_Has_Auth", false);
+        if (hasAuth == false) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setMessage("请同意隐私授权");
+            builder.setNegativeButton("拒绝", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    System.exit(0);//正常退出
+                }
+            });
+            builder.setPositiveButton("同意", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    //记录授权标记
+                    SharedPreferences.Editor sp = mContext.getSharedPreferences("MY_PREFERENCE", Context.MODE_PRIVATE).edit();
+                    sp.putBoolean("key_Has_Auth", true);
+                    sp.commit();
+
+                    startUmeng();
+                }
+            });
+            builder.show();
+        }
+        else {
+            startUmeng();
+        }
+    }
+
+    public void startUmeng() {
+        //真正初始化友盟SDK
+        UMConfigure.init(this, "5f3a3aa3b4b08b653e95e6f9", "Umeng", UMConfigure.DEVICE_TYPE_PHONE, null);
+
+        UMConfigure.setProcessEvent(true);//支持多进程打点.默认不支持
+        
+        /**
+         * getInstallParams请在UMConfigure.init之后调用
+         * 由于UMConfigure.init有异步联网操作,建议init后延迟几秒后再调用getInstallParams
+         * 或者，如示例在真正需要参数的某个时间点或者用户操作节点（如button点击）调用
+         */
+
         Uri data = getIntent().getData();
         if (data != null) {
+            mFrom = "onCreate-handleUMLinkURI";
+            Log.i("UMLINKDEMOINFO", "onCreate: "+data.toString());
             MobclickLink.handleUMLinkURI(this, data, umlinkAdapter);
         }
 
         SharedPreferences sp = mContext.getSharedPreferences("MY_PREFERENCE", Context.MODE_PRIVATE);
         boolean hasGetInstallParams = sp.getBoolean("key_Has_Get_InstallParams", false);
         if (hasGetInstallParams == false) {
+            mFrom = "onCreate-getInstallParams";
             //从来没调用过getInstallParam方法，适当延时调用getInstallParam方法
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -45,10 +87,10 @@ public class MainActivity extends AppCompatActivity {
                     MobclickLink.getInstallParams(mContext, umlinkAdapter);
                 }
             }, 2000);//2秒后执行
-            //MobclickLink.getInstallParams(mContext, umlinkAdapter);
 
-            //在9.3.3版本中，由于要检查SDK是否初始化成功，所以可能需要3秒乃至更长的延迟才能调用getInstallParams
-            //在9.3.6以后版本中，不再检查SDK是否初始化成功，可以不用延迟
+            //MobclickLink.getInstallParams(mContext, umlinkAdapter);
+            //不再检查SDK是否初始化成功，可以不用延迟几秒
+            //但延迟调用有助于提升模糊匹配成功率
 
         }
         else {
@@ -65,10 +107,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Uri uri = intent.getData();
         // 此处要调用，否则App在后台运行时，会无法截获
         Uri data = intent.getData();
         if (data != null) {
+            Log.i("UMLINKDEMOINFO", "onNewIntent: "+data.toString());
+            mFrom = "onNewIntent-handleUMLinkURI";
             MobclickLink.handleUMLinkURI(this, data, umlinkAdapter);
         }
     }
@@ -95,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 in.putExtra("install_params", install_params_bundle);
             }
+            in.putExtra("from", mFrom);
             startActivity(in);
         }
 
